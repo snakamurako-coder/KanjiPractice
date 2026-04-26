@@ -768,8 +768,9 @@
     for (let i = 0; i < rN.length; i++) {
       const us = uN[i][0], ue = uN[i][uN[i].length - 1], rs = rN[i][0], re = rN[i][rN[i].length - 1];
       const dS = Math.hypot(us.x - rs.x, us.y - rs.y), dE = Math.hypot(ue.x - re.x, ue.y - re.y);
+      // 正規化座標上の先端/末端差。スケールを大きいほうが同じ距離で得点が上がる（易しい）
       const pairMean = (dS + dE) / 2;
-      total += distTo100(pairMean, 0.20);
+      total += distTo100(pairMean, 0.30);
       count++;
     }
     return count ? Math.round(total / count) : 0;
