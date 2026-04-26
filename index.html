@@ -708,7 +708,8 @@
     const sEl = document.getElementById('score'), mEl = document.getElementById('msg');
     if (userStrokes.length !== referenceStrokes.length) { sEl.innerText = "0 点"; mEl.innerText = `画数が違います（正解：${referenceStrokes.length}画）`; return; }
     
-    const resample = (s, n) => {
+    const resample = (sArray, n) => {
+        const s = [...sArray];
         if (s.length < 2) return Array(n).fill(s[0] || {x:0, y:0});
         let len = 0; for (let i = 1; i < s.length; i++) len += Math.hypot(s[i].x - s[i-1].x, s[i].y - s[i-1].y);
         const step = len / (n - 1), res = [s[0]]; let d = 0, i = 1;
