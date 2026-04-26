@@ -869,7 +869,15 @@
     let typeErrors = 0;
     if (isStrict) {
       for (let i = 0; i < rN.length; i++) {
-        if (userStrokes[i].type !== referenceStrokes[i].type) { typeErrors++; score = Math.max(0, score - 6); }
+        const rType = referenceStrokes[i].type;
+        const uType = userStrokes[i].type;
+        // はね・はらいがあるべき場所にない場合は減点
+        if (rType === 'hane' && uType !== 'hane') {
+          typeErrors++; score = Math.max(0, score - 6);
+        } else if (rType === 'harai' && uType !== 'harai') {
+          typeErrors++; score = Math.max(0, score - 6);
+        }
+        // とめ(rType === 'tome')の箇所に不要なはね・はらいが存在しても減点しない
       }
     }
 
