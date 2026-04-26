@@ -704,31 +704,163 @@
     frame();
   }
 
+  // ==========================================
+  // 9b. 採点用ヘルパ（リサンプル・正規化・DTW・交差・サイズ）
+  // ==========================================
+  const SCORE_WEIGHTS = { trajectory: 0.45, startEnd: 0.2, structure: 0.15, size: 0.2 };
+
+  function resamplePolyline(sArray, n) {
+    const s = [...sArray];
+    if (s.length < 2) return Array(n).fill(s[0] || {x:0, y:0});
+    let len = 0; for (let i = 1; i < s.length; i++) len += Math.hypot(s[i].x - s[i-1].x, s[i].y - s[i-1].y);
+    const step = len / (n - 1), res = [s[0]]; let d = 0, i = 1;
+    while (i < s.length && res.length < n) {
+      const seg = Math.hypot(s[i].x - s[i-1].x, s[i].y - s[i-1].y);
+      if (d + seg >= step) { const t = (step - d) / Math.max(0.1, seg); res.push({ x: s[i-1].x + (s[i].x - s[i-1].x) * t, y: s[i-1].y + (s[i].y - s[i-1].y) * t }); s.splice(i, 0, res[res.length - 1]); d = 0; }
+      else { d += seg; i++; }
+    }
+    while (res.length < n) res.push(s[s.length - 1]); return res;
+  }
+
+  function normalizeStrokesToUnitSquare(strokes) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    strokes.forEach(s => { s.forEach(p => { minX = Math.min(minX, p.x); minY = Math.min(minY, p.y); maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y); }); });
+    const scale = Math.max(maxX - minX, maxY - minY) || 1;
+    return strokes.map(s => s.map(p => ({x: (p.x - minX) / scale, y: (p.y - minY) / scale})));
+  }
+
+  function dtwMeanDistance(a, b) {
+    const n = a.length, m = b.length;
+    if (n === 0 || m === 0) return 1;
+    const inf = 1e12;
+    const dtw = Array(n + 1);
+    for (let i = 0; i <= n; i++) {
+      dtw[i] = new Float64Array(m + 1);
+      dtw[i].fill(inf);
+    }
+    dtw[0][0] = 0;
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= m; j++) {
+        const cost = Math.hypot(a[i - 1].x - b[j - 1].x, a[i - 1].y - b[j - 1].y);
+        dtw[i][j] = cost + Math.min(dtw[i - 1][j], dtw[i][j - 1], dtw[i - 1][j - 1]);
+      }
+    }
+    const pathLen = n + m - 1;
+    return dtw[n][m] / Math.max(1, pathLen);
+  }
+
+  function distTo100(meanDist, scale) {
+    return Math.max(0, Math.min(100, Math.round(100 * (1 - meanDist / scale))));
+  }
+
+  function calcTrajectoryScoreDtw(uN, rN) {
+    let sum = 0;
+    for (let i = 0; i < rN.length; i++) {
+      const m = dtwMeanDistance(uN[i], rN[i]);
+      sum += distTo100(m, 0.12);
+    }
+    return Math.round(sum / rN.length);
+  }
+
+  function calcStartEndScore(uN, rN) {
+    let total = 0, count = 0;
+    for (let i = 0; i < rN.length; i++) {
+      const us = uN[i][0], ue = uN[i][uN[i].length - 1], rs = rN[i][0], re = rN[i][rN[i].length - 1];
+      const dS = Math.hypot(us.x - rs.x, us.y - rs.y), dE = Math.hypot(ue.x - re.x, ue.y - re.y);
+      const pairMean = (dS + dE) / 2;
+      total += distTo100(pairMean, 0.14);
+      count++;
+    }
+    return count ? Math.round(total / count) : 0;
+  }
+
+  function cross2(ax, ay, bx, by) { return ax * by - ay * bx; }
+  function sub(a, b) { return {x: a.x - b.x, y: a.y - b.y}; }
+  function segIntersects(p1, p2, p3, p4) {
+    const r = sub(p2, p1), s = sub(p4, p3);
+    const cr = cross2(r.x, r.y, s.x, s.y);
+    if (Math.abs(cr) < 1e-9) return false;
+    const t = cross2(sub(p3, p1).x, sub(p3, p1).y, s.x, s.y) / cr;
+    const u = cross2(sub(p3, p1).x, sub(p3, p1).y, r.x, r.y) / cr;
+    return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+  }
+
+  function strokePolylinesIntersect(A, B) {
+    for (let i = 0; i < A.length - 1; i++) {
+      for (let j = 0; j < B.length - 1; j++) {
+        if (segIntersects(A[i], A[i + 1], B[j], B[j + 1])) return true;
+      }
+    }
+    return false;
+  }
+
+  function collectIntersectingStrokePairs(polys) {
+    const pairs = new Set();
+    for (let i = 0; i < polys.length; i++) {
+      for (let j = i + 1; j < polys.length; j++) {
+        if (strokePolylinesIntersect(polys[i], polys[j])) {
+          const key = i * 256 + j;
+          pairs.add(key);
+        }
+      }
+    }
+    return pairs;
+  }
+
+  function calcStructureScore(uN, rN) {
+    const refPolys = rN, userPolys = uN;
+    const refSet = collectIntersectingStrokePairs(refPolys);
+    if (refSet.size === 0) return 100;
+    let matches = 0;
+    for (const key of refSet) {
+      const j = key % 256, i = (key - j) / 256;
+      if (strokePolylinesIntersect(userPolys[i], userPolys[j])) matches++;
+    }
+    return Math.round(100 * (matches / refSet.size));
+  }
+
+  function boundingBoxFromStrokesInCanvas(strokes) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let any = false;
+    strokes.forEach(s => { s.forEach(p => { any = true; minX = Math.min(minX, p.x); minY = Math.min(minY, p.y); maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y); }); });
+    if (!any) return { w: 1, h: 1, area: 1 };
+    const w = Math.max(0.1, maxX - minX), h = Math.max(0.1, maxY - minY);
+    return { w, h, area: w * h };
+  }
+
+  function calcSizeScoreCanvas(userStrokesResampled, scaledRefStrokes) {
+    const uB = boundingBoxFromStrokesInCanvas(userStrokesResampled);
+    const rB = boundingBoxFromStrokesInCanvas(scaledRefStrokes.map(s => s.points));
+    const areaRatio = uB.area / rB.area;
+    const lo0 = 0.55, lo1 = 0.70, hi1 = 1.30, hi2 = 1.55, lo2 = 0.35, hi3 = 2.0;
+    if (areaRatio >= lo1 && areaRatio <= hi1) return 100;
+    if (areaRatio >= lo0 && areaRatio < lo1) return Math.round(90 + 10 * (areaRatio - lo0) / (lo1 - lo0));
+    if (areaRatio > hi1 && areaRatio <= hi2) return Math.round(90 + 10 * (hi2 - areaRatio) / (hi2 - hi1));
+    if (areaRatio < lo0 && areaRatio >= lo2) return Math.round(60 + 30 * (areaRatio - lo2) / (lo0 - lo2));
+    if (areaRatio > hi2 && areaRatio < hi3) return Math.round(60 + 30 * (hi3 - areaRatio) / (hi3 - hi2));
+    if (areaRatio < lo2) return Math.max(0, 40 - Math.min(40, Math.round(80 * (lo2 - areaRatio) / lo2)));
+    if (areaRatio > hi3) return Math.max(0, 40 - Math.min(40, Math.round(20 * (areaRatio - hi3))));
+    return 40;
+  }
+
   function evaluateKanji(isTrace) {
     const sEl = document.getElementById('score'), mEl = document.getElementById('msg');
     if (userStrokes.length !== referenceStrokes.length) { sEl.innerText = "0 点"; mEl.innerText = `画数が違います（正解：${referenceStrokes.length}画）`; return; }
-    
-    const resample = (sArray, n) => {
-        const s = [...sArray];
-        if (s.length < 2) return Array(n).fill(s[0] || {x:0, y:0});
-        let len = 0; for (let i = 1; i < s.length; i++) len += Math.hypot(s[i].x - s[i-1].x, s[i].y - s[i-1].y);
-        const step = len / (n - 1), res = [s[0]]; let d = 0, i = 1;
-        while (i < s.length && res.length < n) {
-            const seg = Math.hypot(s[i].x - s[i-1].x, s[i].y - s[i-1].y);
-            if (d + seg >= step) { const t = (step - d) / Math.max(0.1, seg); res.push({ x: s[i-1].x + (s[i].x - s[i-1].x) * t, y: s[i-1].y + (s[i].y - s[i-1].y) * t }); s.splice(i, 0, res[res.length - 1]); d = 0; } 
-            else { d += seg; i++; }
-        }
-        while (res.length < n) res.push(s[s.length - 1]); return res;
-    };
-    const norm = (strokes) => {
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        strokes.forEach(s => { s.forEach(p => { minX = Math.min(minX, p.x); minY = Math.min(minY, p.y); maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y); }); });
-        const scale = Math.max(maxX - minX, maxY - minY) || 1; return strokes.map(s => s.map(p => ({x: (p.x - minX) / scale, y: (p.y - minY) / scale})));
-    };
-    
-    const uN = norm(userStrokes.map(s => resample(s.points, NUM_SAMPLES))), rN = norm(referenceStrokes.map(s => s.points));
-    let err = 0; for (let i = 0; i < rN.length; i++) for (let j = 0; j < NUM_SAMPLES; j++) err += Math.hypot(uN[i][j].x - rN[i][j].x, uN[i][j].y - rN[i][j].y);
-    let score = Math.max(0, Math.round(100 - (err / (rN.length * NUM_SAMPLES * 0.45)) * 100));
+
+    const userResampled = userStrokes.map(s => resamplePolyline(s.points, NUM_SAMPLES));
+    const uN = normalizeStrokesToUnitSquare(userResampled);
+    const rN = normalizeStrokesToUnitSquare(referenceStrokes.map(s => s.points));
+
+    const trajS = calcTrajectoryScoreDtw(uN, rN);
+    const seS = calcStartEndScore(uN, rN);
+    const strS = calcStructureScore(uN, rN);
+    const scaledRefs = getScaledRefs();
+    const sizeS = calcSizeScoreCanvas(userResampled, scaledRefs);
+
+    let score = Math.round(
+      SCORE_WEIGHTS.trajectory * trajS + SCORE_WEIGHTS.startEnd * seS + SCORE_WEIGHTS.structure * strS + SCORE_WEIGHTS.size * sizeS
+    );
+    score = Math.max(0, Math.min(100, score));
 
     const isStrict = document.getElementById('cb-strict-mode').checked;
     let typeErrors = 0;
@@ -738,13 +870,21 @@
       }
     }
 
-    sEl.innerText = score + " 点"; 
+    const uB2 = boundingBoxFromStrokesInCanvas(userResampled);
+    const rB2 = boundingBoxFromStrokesInCanvas(scaledRefs.map(s => s.points));
+    const areaRatio = (uB2.area / rB2.area) || 1;
+    const sizeLabel = (areaRatio >= 0.7 && areaRatio <= 1.3) ? '大きさは適正' : (areaRatio < 0.7 && areaRatio > 0.4) ? '少し小さい' : (areaRatio < 0.4) ? '小さすぎ' : (areaRatio <= 1.55) ? 'やや大きい' : '大きすぎ';
+
+    sEl.innerText = score + " 点";
+    mEl.style.color = '#555';
+    const subLine = `内訳: 軌道${trajS} 始終${seS} 構造${strS} 大きさ${sizeS}（${sizeLabel}）`;
     if (isStrict && typeErrors > 0) {
-      mEl.innerText = `形は書けていますが、\nとめ・はね・はらいのミスが ${typeErrors} 箇所あります。`;
       mEl.style.color = '#e91e63';
+      mEl.innerText = `形は書けていますが、\nとめ・はね・はらいのミスが ${typeErrors} 箇所あります。\n` + subLine;
     } else {
-      mEl.innerText = score > 85 ? "素晴らしい！完璧です。" : "お手本をよく見て練習しましょう。";
-      mEl.style.color = '#555';
+      if (score > 85) mEl.innerText = "素晴らしい！完璧に近いです。\n" + subLine;
+      else if (score > 65) mEl.innerText = `良い感じです。${sizeLabel}。お手本の形に近づけましょう。\n` + subLine;
+      else mEl.innerText = `もう一歩。${sizeLabel}。ゆっくりなぞると形が安定しやすいです。\n` + subLine;
     }
   }
 </script>
