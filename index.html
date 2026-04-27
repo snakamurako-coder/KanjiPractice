@@ -82,6 +82,7 @@
     <label style="font-size:12px; font-weight:bold; color:#1a73e8; display:flex; align-items:center; cursor:pointer; background:#e8f0fe; padding:5px 10px; border-radius:15px;">
       <input type="checkbox" id="cb-strict-mode" style="margin-right:5px; transform: scale(1.2);"> ☑ 厳密採点 (とめ・はね・はらい判定)
     </label>
+    <button style="background:#ff9800; padding:5px 10px; font-size:12px; border-radius:15px; box-shadow:none;" onclick="removeLastEffect()">直前画の飾りを消す</button>
   </div>
 
   <div id="score-controls" class="controls">
@@ -641,6 +642,13 @@
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     if (mode === 'trace') drawTraceGuide();
     userStrokes.forEach(s => { renderStrokeWithEffect(ctx, s.points, s.type, (mode === 'trace' ? '#e53935' : '#333')); });
+  }
+
+  function removeLastEffect() {
+    if (userStrokes.length > 0) {
+      userStrokes[userStrokes.length - 1].type = 'none';
+      redrawAllUserStrokes();
+    }
   }
 
   function updateAllPreviews() {
