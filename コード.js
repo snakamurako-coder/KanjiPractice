@@ -1,10 +1,16 @@
 /**
- * 厳密漢字判定ツール (KanjiVG) - サーバー側スクリプト
- * * 【🚀 必須の事前準備】
- * 1. 読み込みたいスプレッドシートのIDをコピー
- * 2. GASエディタの「プロジェクトの設定（歯車）」>「スクリプト プロパティ」に以下を追加
- * - プロパティ: KANJI_SHEET_ID
- * - 値: コピーしたスプレッドシートのID
+ * 厳密漢字判定ツール (KanjiVG) + 縦書きドリル — サーバー側
+ *
+ * 【単漢字・KanjiVG】
+ * - KANJI_SHEET_ID … ストローク用スプレッドシート ID
+ *
+ * 【縦書きドリル教材】次のいずれかでブック一覧を解決します（優先順）。
+ * 1. KANJI_DRILL_BOOK_IDS … カンマ区切りのスプレッドシート ID（教材フォルダ内のブックを明示登録）
+ * 2. KANJI_DRILL_BOOK_ID … 単一ブック ID（従来 DRILL_BOOK_ID もフォールバックで受理）
+ * 3. KANJI_DRILL_FOLDER_ID … Drive 上の「教材」フォルダ ID。フォルダ内の Google スプレッドシートを一覧
+ *
+ * シート1行目はヘッダ行。想定列例:
+ * セット, 漢字, 訓読みA_読み, 訓A_例文1, 訓A_例文2, … 音読みD_読み, 音D_例文1, 音D_例文2
  */
 
 /**
@@ -17,68 +23,152 @@ function doGet() {
 }
 
 /**
- * ドリル用データを取得
+ * ドリル用ブック一覧（スプレッドシート）
  */
-function getDrillData() {
+function getDrillBooksList() {
   const prop = PropertiesService.getScriptProperties();
-  const bookId = prop.getProperty('DRILL_BOOK_ID');
-  if (!bookId) {
-    return { error: "❌ スクリプトプロパティ 'DRILL_BOOK_ID' が未設定です。" };
+  const idsCsv =
+    prop.getProperty('KANJI_DRILL_BOOK_IDS') ||
+    prop.getProperty('DRILL_BOOK_IDS');
+  const folderId =
+    prop.getProperty('KANJI_DRILL_FOLDER_ID') ||
+    prop.getProperty('KANJI_DRILL_MATERIAL_FOLDER_ID');
+  const singleId =
+    prop.getProperty('KANJI_DRILL_BOOK_ID') ||
+    prop.getProperty('DRILL_BOOK_ID');
+
+  const books = [];
+
+  if (idsCsv && String(idsCsv).trim()) {
+    String(idsCsv).split(',').map(function (s) {
+      return String(s).trim();
+    }).filter(Boolean).forEach(function (id) {
+      try {
+        var ss = SpreadsheetApp.openById(id);
+        books.push({ id: id, name: ss.getName() });
+      } catch (e) {
+        console.warn('skip book id ' + id + ': ' + e.message);
+      }
+    });
+    return { success: true, books: books };
   }
-  
+
+  if (singleId && String(singleId).trim()) {
+    try {
+      var ss0 = SpreadsheetApp.openById(String(singleId).trim());
+      books.push({ id: String(singleId).trim(), name: ss0.getName() });
+      return { success: true, books: books };
+    } catch (e) {
+      return { error: '❌ KANJI_DRILL_BOOK_ID でブックを開けません。\n' + e.message, books: [] };
+    }
+  }
+
+  if (folderId && String(folderId).trim()) {
+    try {
+      var folder = DriveApp.getFolderById(String(folderId).trim());
+      var it = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
+      while (it.hasNext()) {
+        var f = it.next();
+        books.push({ id: f.getId(), name: f.getName() });
+      }
+      return { success: true, books: books };
+    } catch (e) {
+      return { error: '❌ 教材フォルダを読めません。KANJI_DRILL_FOLDER_ID とアクセス権を確認してください。\n' + e.message, books: [] };
+    }
+  }
+
+  return {
+    error:
+      "❌ ドリル教材が未設定です。スクリプトプロパティに次のいずれかを設定してください:\n" +
+      "・KANJI_DRILL_BOOK_IDS（カンマ区切り ID）\n" +
+      '・KANJI_DRILL_BOOK_ID（単一）\n' +
+      '・KANJI_DRILL_FOLDER_ID（「教材」フォルダ）',
+    books: []
+  };
+}
+
+/**
+ * 指定ブック内の全シートをドリル用レコードに変換して返す
+ * @param {string} bookId スプレッドシート ID
+ */
+function getDrillData(bookId) {
+  if (!bookId) {
+    var prop2 = PropertiesService.getScriptProperties();
+    bookId =
+      prop2.getProperty('KANJI_DRILL_BOOK_ID') ||
+      prop2.getProperty('DRILL_BOOK_ID');
+  }
+  if (!bookId) {
+    return { error: "❌ getDrillData(bookId) にブック ID がありません。" };
+  }
+
   try {
-    const ss = SpreadsheetApp.openById(bookId);
-    const sheets = ss.getSheets();
-    const drillData = {};
-    
-    sheets.forEach(sheet => {
-      const name = sheet.getName();
-      const values = sheet.getDataRange().getValues();
+    var ss = SpreadsheetApp.openById(String(bookId));
+    var sheets = ss.getSheets();
+    var drillData = {};
+
+    sheets.forEach(function (sheet) {
+      var name = sheet.getName();
+      var values = sheet.getDataRange().getValues();
       if (values.length < 2) return;
-      
-      const headers = values[0];
-      const records = [];
-      for (let i = 1; i < values.length; i++) {
-        const row = values[i];
-        if (!row[0]) continue; // 空行スキップ
-        const record = {};
-        for (let j = 0; j < headers.length; j++) {
-          record[headers[j]] = row[j];
+
+      var headers = values[0].map(function (h) {
+        return String(h == null ? '' : h).trim();
+      });
+      var records = [];
+      for (var i = 1; i < values.length; i++) {
+        var row = values[i];
+        var empty = true;
+        for (var c = 0; c < row.length; c++) {
+          if (row[c] != null && String(row[c]).trim() !== '') {
+            empty = false;
+            break;
+          }
+        }
+        if (empty) continue;
+
+        var record = {};
+        for (var j = 0; j < headers.length; j++) {
+          if (!headers[j]) continue;
+          var cell = row[j];
+          record[headers[j]] = cell;
         }
         records.push(record);
       }
       drillData[name] = records;
     });
-    
-    return { success: true, data: drillData, bookName: ss.getName() };
+
+    return { success: true, data: drillData, bookId: bookId, bookName: ss.getName() };
   } catch (e) {
-    return { error: "❌ ドリル用スプレッドシートの読み込みに失敗しました。\nIDと権限を確認してください。\n" + e.message };
+    return {
+      error:
+        '❌ ドリル用ブックの読み込みに失敗しました。ID と共有権を確認してください。\n' +
+        e.message,
+    };
   }
 }
 
-
 /**
- * アプリ起動時の初期設定情報を取得
+ * アプリ起動時の初期設定情報を取得（KanjiVG 単漢字用ブック）
  */
 function getAppInitData() {
   const prop = PropertiesService.getScriptProperties();
   const sheetId = prop.getProperty('KANJI_SHEET_ID');
-  
+
   if (!sheetId) {
     throw new Error("❌ スクリプトプロパティ 'KANJI_SHEET_ID' が未設定です。");
   }
-  
+
   try {
     const ss = SpreadsheetApp.openById(sheetId);
     const sheets = ss.getSheets().map(s => s.getName());
-    
-    // スプレッドシート名とシート一覧を返す
+
     return {
       bookName: ss.getName(),
       sheets: sheets
     };
   } catch (e) {
-    throw new Error("❌ スプレッドシートにアクセスできません。IDと共有権限を確認してください。\n" + e.message);
+    throw new Error('❌ スプレッドシートにアクセスできません。IDと共有権限を確認してください。\n' + e.message);
   }
 }
 
@@ -89,61 +179,51 @@ function getAppInitData() {
 function getKanjiDataFromSheet(sheetName) {
   const prop = PropertiesService.getScriptProperties();
   const sheetId = prop.getProperty('KANJI_SHEET_ID');
-  
+
   try {
     const ss = SpreadsheetApp.openById(sheetId);
     const sheet = ss.getSheetByName(sheetName);
     if (!sheet) return {};
 
-    // 全データを一括取得して処理を高速化
     const values = sheet.getDataRange().getValues();
     const kanjiMap = {};
 
     for (let i = 0; i < values.length; i++) {
       const row = values[i];
-      const kanji = row[0]; // A列：漢字
+      const kanji = row[0];
 
-      // A列が「1文字」の場合のみ処理（ヘッダーや空行を無視）
       if (kanji && String(kanji).trim().length === 1) {
         const paths = [];
 
-        // B列(index 1)はUnicode表記（4.00E+00などバグりやすいため）を無視
-        // C列(index 2)以降のパスデータを走査
         for (let j = 2; j < row.length; j++) {
           const cellValue = row[j];
           if (!cellValue) continue;
 
           const strVal = String(cellValue).trim();
-          if (strVal === "") continue;
+          if (strVal === '') continue;
 
-          // 「|」区切りで複数画が入っている場合の分割処理
           if (strVal.includes('|')) {
-            const parts = strVal.split('|');
-            parts.forEach(p => {
+            strVal.split('|').forEach(p => {
               const cleaned = p.trim();
               if (cleaned.startsWith('M') || cleaned.startsWith('m')) {
                 paths.push(cleaned);
               }
             });
-          } else {
-            // 1セル1画、かつMから始まるSVGパスであれば採用
-            if (strVal.startsWith('M') || strVal.startsWith('m')) {
-              paths.push(strVal);
-            }
+          } else if (strVal.startsWith('M') || strVal.startsWith('m')) {
+            paths.push(strVal);
           }
         }
 
-        // 有効なパスが見つかれば登録
         if (paths.length > 0) {
           kanjiMap[kanji] = paths;
         }
       }
     }
-    
+
     return kanjiMap;
 
   } catch (e) {
-    console.error("Data Fetch Error: " + e.message);
+    console.error('Data Fetch Error: ' + e.message);
     return {};
   }
 }
