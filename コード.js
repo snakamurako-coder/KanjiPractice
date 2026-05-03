@@ -17,6 +17,47 @@ function doGet() {
 }
 
 /**
+ * ドリル用データを取得
+ */
+function getDrillData() {
+  const prop = PropertiesService.getScriptProperties();
+  const bookId = prop.getProperty('DRILL_BOOK_ID');
+  if (!bookId) {
+    return { error: "❌ スクリプトプロパティ 'DRILL_BOOK_ID' が未設定です。" };
+  }
+  
+  try {
+    const ss = SpreadsheetApp.openById(bookId);
+    const sheets = ss.getSheets();
+    const drillData = {};
+    
+    sheets.forEach(sheet => {
+      const name = sheet.getName();
+      const values = sheet.getDataRange().getValues();
+      if (values.length < 2) return;
+      
+      const headers = values[0];
+      const records = [];
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (!row[0]) continue; // 空行スキップ
+        const record = {};
+        for (let j = 0; j < headers.length; j++) {
+          record[headers[j]] = row[j];
+        }
+        records.push(record);
+      }
+      drillData[name] = records;
+    });
+    
+    return { success: true, data: drillData, bookName: ss.getName() };
+  } catch (e) {
+    return { error: "❌ ドリル用スプレッドシートの読み込みに失敗しました。\nIDと権限を確認してください。\n" + e.message };
+  }
+}
+
+
+/**
  * アプリ起動時の初期設定情報を取得
  */
 function getAppInitData() {

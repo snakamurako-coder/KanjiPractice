@@ -52,13 +52,112 @@
     .profile-slot { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; }
     .profile-slot input { flex: 1; font-size: 12px; padding: 6px; }
     .profile-slot button { font-size: 11px; padding: 6px 10px; border-radius: 4px; }
+    
+    /* タブ切り替え用 */
+    .app-tabs { display: flex; width: 100%; max-width: 400px; margin-bottom: 15px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .app-tabs button { flex: 1; border-radius: 0; background: transparent; color: #555; padding: 12px; font-size: 14px; box-shadow: none; border-bottom: 3px solid transparent; }
+    .app-tabs button.active { font-weight: bold; color: #1a73e8; border-bottom: 3px solid #1a73e8; background: #f8fbff; }
+    .app-section { display: none; width: 100%; flex-direction: column; align-items: center; }
+    .app-section.active { display: flex; }
+
+    /* ドリルUI用（縦書き） */
+    .drill-paper {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      background: #fff;
+      border: 2px solid #ccc;
+      padding: 20px;
+      width: 95vw;
+      max-width: 800px;
+      height: 60vh;
+      min-height: 400px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: row;
+      gap: 30px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      font-family: 'Klee One', serif;
+    }
+    .drill-question-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      border-left: 1px dashed #ddd;
+      padding-left: 15px;
+    }
+    .drill-q-num {
+      font-size: 18px;
+      font-weight: bold;
+      border: 1px solid #333;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .drill-reading {
+      font-size: 16px;
+      color: #e53935;
+      margin-bottom: 10px;
+      border: 1px solid #e53935;
+      padding: 4px 6px;
+      border-radius: 4px;
+    }
+    .drill-sentence {
+      font-size: 24px;
+      line-height: 2.0;
+      letter-spacing: 2px;
+    }
+    .kanji-blank {
+      display: inline-block;
+      width: 1.5em;
+      height: 1.5em;
+      border: 2px dotted #999;
+      margin: 10px 0;
+      text-align: center;
+      color: transparent;
+      cursor: pointer;
+      position: relative;
+    }
+    .kanji-blank.active {
+      border: 2px solid #1a73e8;
+      background: #e8f0fe;
+    }
+    .kanji-blank.answered {
+      color: #e53935;
+      border: 2px solid #e53935;
+      background: transparent;
+      font-weight: bold;
+    }
+    .kanji-blank.answered::after {
+      content: '〇';
+      position: absolute;
+      top: -15px;
+      right: -15px;
+      color: red;
+      font-size: 24px;
+    }
   </style>
 </head>
 <body>
 
-  <div id="loading-overlay"><div class="loader"></div><span>準備中...</span></div>
+  <div id="loading-overlay"><div class="loader"></div><span id="loading-msg">準備中...</span></div>
 
   <h2>漢字書き順ドリル</h2>
+
+  <div class="app-tabs">
+    <button id="tab-practice" class="active" onclick="switchAppTab('practice')">単漢字練習</button>
+    <button id="tab-drill" onclick="switchAppTab('drill')">文章ドリル</button>
+  </div>
+
+  <div id="section-practice" class="app-section active">
+
 
   <div id="kanji-selector-area">
     <div class="selector-row">
@@ -108,6 +207,34 @@
     <div id="score" class="score">- 点</div>
     <div id="msg" class="msg">書いて「採点する」を押してください</div>
   </div>
+
+  </div> <!-- end of section-practice -->
+
+  <div id="section-drill" class="app-section">
+    <div id="drill-selector-area" style="margin-bottom: 12px; display:flex; flex-direction: column; align-items:center; gap: 10px; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%; max-width: 350px; box-sizing: border-box;">
+      <div class="selector-row">
+        <select id="drill-sheet-select" onchange="renderDrillSets()"></select>
+        <button onclick="fetchDrillData()" style="margin:0; background:#34a853; padding:6px 12px; font-size:12px;">データ更新</button>
+      </div>
+      <div class="selector-row">
+        <select id="drill-set-select"></select>
+        <button onclick="startDrill()" style="margin:0; background:#1a73e8; padding:6px 12px; font-size:12px;">スタート</button>
+      </div>
+    </div>
+
+    <div id="drill-container" class="hidden" style="display:flex; flex-direction:column; align-items:center; width: 100%;">
+      <div class="drill-paper">
+         <div id="drill-questions" style="display:flex; flex-direction:row; gap: 30px;"></div>
+      </div>
+      
+      <!-- Canvas container specifically for drill -->
+      <div id="drill-canvas-container" style="display:flex; flex-direction:column; align-items:center;">
+        <div id="drill-mode-msg" style="font-size:12px; color:#1a73e8; margin-bottom:10px; font-weight: bold;">空欄をタップして漢字を書いてください</div>
+        <!-- We will move the main canvas here when in drill mode, or keep it shared but visually adapt -->
+      </div>
+    </div>
+  </div>
+
 
   <div id="settings-modal" class="modal-overlay hidden">
     <div class="modal-content">
@@ -1029,6 +1156,240 @@
       else mEl.innerText = `もう一歩。${sizeLabel}。ゆっくりなぞると形が安定しやすいです。\n` + subLine;
     }
   }
+
+  // ==========================================
+  // 10. ドリルモード用ロジック
+  // ==========================================
+  let APP_MODE = 'practice'; // 'practice' or 'drill'
+  let ALL_DRILL_DATA = {};
+  let CURRENT_DRILL_QUESTIONS = [];
+  let ACTIVE_QUESTION_INDEX = -1;
+
+  function switchAppTab(tab) {
+    APP_MODE = tab;
+    document.getElementById('tab-practice').classList.remove('active');
+    document.getElementById('tab-drill').classList.remove('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    
+    document.getElementById('section-practice').classList.remove('active');
+    document.getElementById('section-drill').classList.remove('active');
+    document.getElementById(`section-${tab}`).classList.add('active');
+
+    // キャンバスと関連UIの移動
+    const canvasEl = document.getElementById('canvas');
+    // controls の取得（複数の controls クラスがあるので工夫する）
+    const strictModeControls = document.getElementById('cb-strict-mode')?.closest('.controls') || document.querySelectorAll('.controls')[0];
+    const scoreControls = document.getElementById('score-controls');
+    const traceControls = document.getElementById('trace-controls');
+    const demoControls = document.getElementById('demo-controls');
+    const resultBox = document.getElementById('result-box');
+    const modeMsg = document.getElementById('mode-msg');
+
+    if (tab === 'drill') {
+      const dest = document.getElementById('drill-canvas-container');
+      dest.appendChild(modeMsg);
+      dest.appendChild(canvasEl);
+      if (strictModeControls) dest.appendChild(strictModeControls);
+      if (scoreControls) dest.appendChild(scoreControls);
+      if (traceControls) dest.appendChild(traceControls);
+      if (demoControls) dest.appendChild(demoControls);
+      dest.appendChild(resultBox);
+      
+      // 初回ならドリルデータを復元
+      if (Object.keys(ALL_DRILL_DATA).length === 0) {
+        const cached = SafeStorage.get('kanjiDrillData');
+        if (cached) {
+          try {
+            ALL_DRILL_DATA = JSON.parse(cached);
+            updateDrillSheetSelect();
+          } catch(e) {}
+        }
+      }
+    } else {
+      const dest = document.getElementById('section-practice');
+      const ref = document.getElementById('kanji-selector-area');
+      dest.insertBefore(modeMsg, ref.nextSibling);
+      dest.insertBefore(canvasEl, modeMsg.nextSibling);
+      
+      let lastEl = canvasEl;
+      if (strictModeControls) { dest.insertBefore(strictModeControls, lastEl.nextSibling); lastEl = strictModeControls; }
+      if (scoreControls) { dest.insertBefore(scoreControls, lastEl.nextSibling); lastEl = scoreControls; }
+      if (traceControls) { dest.insertBefore(traceControls, lastEl.nextSibling); lastEl = traceControls; }
+      if (demoControls) { dest.insertBefore(demoControls, lastEl.nextSibling); lastEl = demoControls; }
+      dest.insertBefore(resultBox, lastEl.nextSibling);
+    }
+  }
+
+  function fetchDrillData() {
+    showLoading(true, 'ドリルデータ取得中...');
+    if (!IS_GAS_RUNTIME) {
+      setTimeout(() => { showLoading(false); alert('GAS環境ではありません。ダミーデータを使用します。'); }, 500);
+      return;
+    }
+    google.script.run
+      .withSuccessHandler(res => {
+        showLoading(false);
+        if (res.error) {
+          alert(res.error);
+          return;
+        }
+        ALL_DRILL_DATA = res.data;
+        SafeStorage.set('kanjiDrillData', JSON.stringify(ALL_DRILL_DATA));
+        updateDrillSheetSelect();
+      })
+      .withFailureHandler(e => {
+        showLoading(false);
+        alert('エラー: ' + e.message);
+      })
+      .getDrillData();
+  }
+
+  function updateDrillSheetSelect() {
+    const select = document.getElementById('drill-sheet-select');
+    const sheets = Object.keys(ALL_DRILL_DATA);
+    select.innerHTML = sheets.length ? sheets.map(s => `<option value="${s}">${s}</option>`).join('') : '<option value="">データなし</option>';
+    renderDrillSets();
+  }
+
+  function renderDrillSets() {
+    const sheetName = document.getElementById('drill-sheet-select').value;
+    if (!sheetName) return;
+    const data = ALL_DRILL_DATA[sheetName] || [];
+    const sets = new Set();
+    data.forEach(row => {
+      if (row['セット'] && row['セット'] !== '×') sets.add(row['セット']);
+    });
+    const setSelect = document.getElementById('drill-set-select');
+    setSelect.innerHTML = Array.from(sets).map(s => `<option value="${s}">セット ${s}</option>`).join('');
+  }
+
+  function startDrill() {
+    const sheetName = document.getElementById('drill-sheet-select').value;
+    const setName = document.getElementById('drill-set-select').value;
+    if (!sheetName || !setName) return;
+    
+    const data = ALL_DRILL_DATA[sheetName] || [];
+    const rows = data.filter(r => String(r['セット']) === String(setName));
+    
+    CURRENT_DRILL_QUESTIONS = [];
+    const prefixes = ['訓A', '訓B', '訓C', '訓D', '音A', '音B', '音C', '音D'];
+    
+    rows.forEach(row => {
+      const targetKanji = row['漢字'];
+      if (!targetKanji || targetKanji === '×') return;
+      
+      prefixes.forEach(p => {
+        const yomi = row[`${p}_読み`];
+        if (!yomi || yomi === '×') return;
+        
+        [1, 2].forEach(num => {
+          const sen = row[`${p}_例文${num}`];
+          if (sen && sen !== '×') {
+            CURRENT_DRILL_QUESTIONS.push({
+              kanji: targetKanji,
+              yomi: yomi,
+              sentence: sen,
+              id: CURRENT_DRILL_QUESTIONS.length
+            });
+          }
+        });
+      });
+    });
+    
+    if (CURRENT_DRILL_QUESTIONS.length === 0) {
+      alert('このセットには有効な問題がありません。');
+      return;
+    }
+
+    renderDrillPaper();
+  }
+
+  function renderDrillPaper() {
+    const container = document.getElementById('drill-questions');
+    container.innerHTML = '';
+    
+    CURRENT_DRILL_QUESTIONS.forEach((q, i) => {
+      // 例文内の漢字を空欄に置換
+      const parts = q.sentence.split(q.kanji);
+      const displaySentence = parts.join(`<span class="kanji-blank" id="blank-${i}" onclick="selectDrillQuestion(${i})"></span>`);
+      
+      const col = document.createElement('div');
+      col.className = 'drill-question-col';
+      col.innerHTML = `
+        <div class="drill-q-num">${i + 1}</div>
+        <div class="drill-reading">${q.yomi}</div>
+        <div class="drill-sentence">${displaySentence}</div>
+      `;
+      container.appendChild(col);
+    });
+    
+    document.getElementById('drill-container').classList.remove('hidden');
+    
+    if (CURRENT_DRILL_QUESTIONS.length > 0) {
+      selectDrillQuestion(0);
+    }
+  }
+
+  function selectDrillQuestion(idx) {
+    ACTIVE_QUESTION_INDEX = idx;
+    document.querySelectorAll('.kanji-blank').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll(`#blank-${idx}`).forEach(el => el.classList.add('active'));
+    
+    const q = CURRENT_DRILL_QUESTIONS[idx];
+    setTargetKanjiForDrill(q.kanji);
+    
+    // スクロールを該当の列に合わせる
+    const activeBlank = document.querySelector(`#blank-${idx}`);
+    if (activeBlank) {
+      activeBlank.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+    }
+  }
+
+  function setTargetKanjiForDrill(kanji) {
+    if (KANJI_DATA[kanji]) {
+      referenceStrokes = KANJI_DATA[kanji].map(p => {
+        const points = sampleSvgPath(p, NUM_SAMPLES);
+        return { type: detectStrokeType(points, false), points: points };
+      });
+    } else {
+      referenceStrokes = [];
+      console.warn("漢字データがありません: " + kanji);
+    }
+    switchMode('score');
+    clearCanvas();
+  }
+  
+  // 採点結果の拡張: ドリルモードなら空欄を埋める
+  const originalEvaluateKanji = evaluateKanji;
+  evaluateKanji = function(isTrace) {
+    originalEvaluateKanji(isTrace);
+    
+    const sEl = document.getElementById('score');
+    const scoreText = sEl.innerText;
+    const scoreMatch = scoreText.match(/(\d+)/);
+    if (scoreMatch && APP_MODE === 'drill' && ACTIVE_QUESTION_INDEX >= 0) {
+      const score = parseInt(scoreMatch[1]);
+      if (score >= 70) {
+        // 合格なら空欄を埋める
+        const q = CURRENT_DRILL_QUESTIONS[ACTIVE_QUESTION_INDEX];
+        const blanks = document.querySelectorAll(`#blank-${ACTIVE_QUESTION_INDEX}`);
+        blanks.forEach(b => {
+          b.classList.add('answered');
+          b.innerText = q.kanji;
+        });
+        
+        // 次の問題があれば自動的に進む
+        setTimeout(() => {
+          if (ACTIVE_QUESTION_INDEX + 1 < CURRENT_DRILL_QUESTIONS.length) {
+            const nextBlank = document.querySelector(`#blank-${ACTIVE_QUESTION_INDEX + 1}`);
+            if (nextBlank && !nextBlank.classList.contains('answered')) {
+              selectDrillQuestion(ACTIVE_QUESTION_INDEX + 1);
+            }
+          }
+        }, 1500);
+      }
+    }
+  };
 </script>
 </body>
 </html>
