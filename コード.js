@@ -165,7 +165,8 @@ function seedKanjiVGSampleSpreadsheet_(ss) {
     ['右', '53f3', SAMPLE_KANJI_PATH_MIGI],
     ['雨', '9.60E+09', SAMPLE_KANJI_PATH_AME],
   ];
-  sh.getRange(2, 1, 1 + body.length, 3).setValues(body);
+  // getRange(行, 列, 行数, 列数) — データ行数は body.length のみ（1+ は誤りで次元不一致になる）
+  sh.getRange(2, 1, body.length, 3).setValues(body);
   sh.setFrozenRows(1);
 }
 
@@ -174,9 +175,13 @@ function seedKanjiVGSampleSpreadsheet_(ss) {
  */
 function ensureKanjiPracticeBootstrap_() {
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) {
-    console.warn('ensureKanjiPracticeBootstrap_: lock timeout');
-    return;
+  try {
+    lock.waitLock(45000);
+  } catch (e) {
+    throw new Error(
+      '初回教材セットアップのロック取得に失敗しました（同時アクセスが集中している可能性があります）。数十秒後にもう一度開いてください。' +
+      (e && e.message ? ' 詳細: ' + e.message : '')
+    );
   }
   try {
     var props = PropertiesService.getScriptProperties();
