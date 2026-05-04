@@ -2,8 +2,6 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>漢字書き順・美文字ドリル PRO</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
@@ -52,189 +50,13 @@
     .profile-slot { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; }
     .profile-slot input { flex: 1; font-size: 12px; padding: 6px; }
     .profile-slot button { font-size: 11px; padding: 6px 10px; border-radius: 4px; }
-    
-    /* タブ切り替え用 */
-    .app-tabs { display: flex; width: 100%; max-width: 400px; margin-bottom: 15px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .app-tabs button { flex: 1; border-radius: 0; background: transparent; color: #555; padding: 12px; font-size: 14px; box-shadow: none; border-bottom: 3px solid transparent; }
-    .app-tabs button.active { font-weight: bold; color: #1a73e8; border-bottom: 3px solid #1a73e8; background: #f8fbff; }
-    .app-section { display: none; width: 100%; flex-direction: column; align-items: center; }
-    .app-section.active { display: flex; }
-
-    /* 縦書きドリル（学習ワーク風・上→下、列は末尾が右側＝伝統的開始） */
-    #drill-paper-outer {
-      width: 100%;
-      max-width: 920px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin-bottom: 16px;
-      border-radius: 2px;
-    }
-    .drill-paper {
-      writing-mode: vertical-rl;
-      text-orientation: upright;
-      background: linear-gradient(#fffef8, #faf6ee);
-      border: 3px solid #795548;
-      padding: 28px 20px 36px;
-      min-width: min(100%, 680px);
-      min-height: 68vh;
-      max-height: 82vh;
-      box-sizing: border-box;
-      box-shadow: inset 0 0 80px rgba(121,85,72,0.06), 3px 5px 18px rgba(0,0,0,0.12);
-      font-family: 'Klee One', 'Yu Mincho', 'Hiragino Mincho ProN', serif;
-      display: block;
-      margin: 0 auto;
-    }
-    #drill-questions {
-      display: flex;
-      flex-direction: row-reverse;
-      flex-wrap: nowrap;
-      align-items: flex-start;
-      justify-content: flex-start;
-      gap: 0;
-      min-height: 58vh;
-    }
-    .drill-question-col {
-      flex: 0 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      writing-mode: vertical-rl;
-      text-orientation: upright;
-      min-height: 52vh;
-      padding: 8px 20px;
-      margin: 0 4px;
-      border-left: 1px dashed #bcaaa4;
-      box-sizing: border-box;
-      background: rgba(255,255,255,0.55);
-      max-height: 78vh;
-    }
-    .drill-question-col:last-child {
-      border-left: none;
-    }
-    .drill-q-num {
-      font-size: 20px;
-      font-weight: bold;
-      padding: 0 0.35em;
-      margin-bottom: 0.85em;
-      border: 2px solid #333;
-      border-radius: 3px;
-    }
-    .drill-reading-wrap {
-      margin-bottom: 0.85em;
-    }
-    .drill-reading-label {
-      font-size: 11px;
-      color: #6d4c41;
-      font-weight: bold;
-      margin-bottom: 0.2em;
-    }
-    .drill-reading {
-      font-size: 19px;
-      color: #b71c1c;
-      font-weight: bold;
-      border: 2px solid #c62828;
-      padding: 0.45em 0.25em;
-      border-radius: 2px;
-      min-height: 2.6em;
-      letter-spacing: 0.1em;
-    }
-    .drill-sentence {
-      font-size: clamp(21px, 4.8vw, 30px);
-      line-height: 1.92;
-      letter-spacing: 0.14em;
-    }
-    .drill-prompt-line {
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-    }
-    .drill-prefix,
-    .drill-suffix {
-      font-size: clamp(21px, 4.8vw, 30px);
-      line-height: 1.92;
-      letter-spacing: 0.14em;
-    }
-    .kanji-blank {
-      display: inline-block;
-      min-width: 1.35em;
-      min-height: 1.35em;
-      vertical-align: middle;
-      border: 2px dashed #8d8d8d;
-      margin-block: 0.15em;
-      margin-inline: 0.12em;
-      text-align: center;
-      box-sizing: border-box;
-      color: transparent;
-      cursor: pointer;
-      position: relative;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .kanji-blank.active {
-      border: 2px solid #1a73e8;
-      background: rgba(26,115,232,0.12);
-      box-shadow: 0 0 0 1px rgba(26,115,232,0.25);
-    }
-    .kanji-blank.answered {
-      color: #b71c1c;
-      border: 2px solid #5d4037;
-      background: rgba(255,255,255,0.92);
-      font-weight: bold;
-    }
-    #drill-writing-layout {
-      display: flex;
-      flex-direction: row-reverse;
-      align-items: center;
-      gap: 12px;
-      margin-top: 8px;
-    }
-    .drill-side-buttons {
-      display: flex;
-      flex-direction: row-reverse;
-      gap: 8px;
-      writing-mode: vertical-rl;
-      text-orientation: upright;
-    }
-    .drill-vertical-btn {
-      writing-mode: vertical-rl;
-      text-orientation: upright;
-      border-radius: 12px;
-      min-height: 130px;
-      padding: 10px 8px;
-      font-size: 13px;
-      line-height: 1.3;
-      box-shadow: none;
-    }
-    #drill-ruby-box {
-      min-height: 300px;
-      min-width: 2.4em;
-      writing-mode: vertical-rl;
-      text-orientation: upright;
-      font-weight: bold;
-      color: #c62828;
-      background: #fff;
-      border: 2px solid #ef9a9a;
-      border-radius: 8px;
-      padding: 10px 6px;
-      font-size: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
   </style>
 </head>
 <body>
 
-  <div id="loading-overlay"><div class="loader"></div><span id="loading-msg">準備中...</span></div>
+  <div id="loading-overlay"><div class="loader"></div><span>準備中...</span></div>
 
   <h2>漢字書き順ドリル</h2>
-
-  <div class="app-tabs">
-    <button id="tab-practice" class="active" onclick="switchAppTab('practice')">単漢字練習</button>
-    <button id="tab-drill" onclick="switchAppTab('drill')">縦書きドリル</button>
-  </div>
-
-  <div id="section-practice" class="app-section active">
-
 
   <div id="kanji-selector-area">
     <div class="selector-row">
@@ -254,9 +76,7 @@
 
   <div id="mode-msg" style="font-size:12px; color:#d32f2f; margin-bottom:10px; font-weight: bold;">正確に書いてください</div>
 
-  <div id="app-canvas-slot">
-    <canvas id="canvas"></canvas>
-  </div>
+  <canvas id="canvas"></canvas>
 
   <div class="controls" style="margin-top:10px;">
     <label style="font-size:12px; font-weight:bold; color:#1a73e8; display:flex; align-items:center; cursor:pointer; background:#e8f0fe; padding:5px 10px; border-radius:15px;">
@@ -266,7 +86,7 @@
   </div>
 
   <div id="score-controls" class="controls">
-    <button onclick="evaluateKanji(false)">これでかいとう</button>
+    <button onclick="evaluateKanji(false)">採点する</button>
     <button style="background:#8e8e93;" onclick="clearCanvas()">クリア</button>
   </div>
   
@@ -286,47 +106,6 @@
     <div id="score" class="score">- 点</div>
     <div id="msg" class="msg">書いて「採点する」を押してください</div>
   </div>
-
-  </div> <!-- end of section-practice -->
-
-  <div id="section-drill" class="app-section">
-    <div id="drill-selector-area" style="margin-bottom: 12px; display:flex; flex-direction: column; align-items:center; gap: 10px; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box;">
-      <div class="selector-row">
-        <select id="drill-book-select" onchange="loadSelectedDrillBook()"></select>
-        <button type="button" onclick="refreshDrillBooks()" style="margin:0; background:#546e7a; padding:6px 12px; font-size:12px;">ブック一覧</button>
-      </div>
-      <div class="selector-row">
-        <select id="drill-sheet-select" onchange="renderDrillSets()"></select>
-        <button type="button" onclick="reloadCurrentDrillBook()" style="margin:0; background:#34a853; padding:6px 12px; font-size:12px;">再読込</button>
-      </div>
-      <div class="selector-row">
-        <select id="drill-set-select"></select>
-        <button type="button" onclick="startDrill()" style="margin:0; background:#1a73e8; padding:6px 12px; font-size:12px;">スタート</button>
-      </div>
-    </div>
-
-    <div id="drill-container" class="hidden" style="display:flex; flex-direction:column; align-items:center; width: 100%; box-sizing:border-box;">
-      <div id="drill-paper-outer">
-        <div class="drill-paper">
-          <div id="drill-questions"></div>
-        </div>
-      </div>
-      
-      <!-- Canvas container specifically for drill -->
-      <div id="drill-canvas-container" style="display:flex; flex-direction:column; align-items:center;">
-        <div id="drill-mode-msg" style="font-size:12px; color:#1a73e8; margin-bottom:10px; font-weight: bold;">空欄をタップして漢字を書いてください</div>
-        <div id="drill-writing-layout">
-          <div id="drill-ruby-box">よみ</div>
-          <div class="drill-side-buttons">
-            <button id="btn-drill-answer" class="drill-vertical-btn" style="background:#1a73e8;" onclick="evaluateKanji(false)">これでかいとう</button>
-            <button class="drill-vertical-btn" style="background:#ff9800;" onclick="removeLastEffect()">直前画の飾りをけす</button>
-            <button class="drill-vertical-btn" style="background:#8e8e93;" onclick="clearCanvas()">クリア</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
 
   <div id="settings-modal" class="modal-overlay hidden">
     <div class="modal-content">
@@ -467,90 +246,6 @@
     '木': ['M19.5,39.86c2.45,0.57,5.23,0.8,8.04,0.57C40.75,39.38,63,36.5,79.78,36.15c2.8-0.06,4.54,0.1,7.34,0.5','M51.75,10.5c1.19,1.19,2,3,2,5c0,8.65,0,55.15-0.14,74.75c-0.03,4.19-0.07,7.15-0.11,8.25','M50.75,39.5c0,1.12-0.61,2.44-1.42,3.95C41.75,57.5,26.7,73.93,15.75,80.25','M54.5,39c4.62,6,23,25.75,31.76,34.61c2.27,2.29,4.61,4.39,7.49,5.64'],
     '文': ['M51.62,12.75c1.06,1.06,1.73,2.5,1.73,4.01c0,4.32-0.11,7.61-0.11,12.15','M16.88,32.72c2.7,0.66,5.71,0.86,8.6,0.54c15.77-1.76,40.15-5.01,56.42-6.1c3.67-0.25,6.15,0.05,8.88,0.69','M69.89,32.5c0.36,2.12,0.06,3.82-0.93,6.27C61.62,57,43.75,80.25,18.75,93.75','M31,43.75c6,0,27.27,26.79,49.26,42.1c4.13,2.87,7.49,4.77,11.49,6.04']
   };
-
-  const IS_GAS_RUNTIME = typeof google !== 'undefined' && google.script && google.script.run;
-  let STATIC_KANJI_PACK = null;
-
-  function embeddedStaticKanjiPack() {
-    const sheet = {};
-    for (const k of Object.keys(TEST_KANJI)) sheet[k] = TEST_KANJI[k].slice();
-    return { bookName: 'KanjiPractice-embedded', sheetData: { 'デモ（内蔵）': sheet } };
-  }
-
-  const KANJI_VG_TXT_FILE = 'KanjiVG.txt';
-  const KANJI_VG_SHEET_NAME = 'KanjiVG';
-  const KANJI_VG_BOOK_ID = 'KanjiPractice-KanjiVG-txt';
-
-  function pathsFromKanjiVGPathsCell(cellValue) {
-    const paths = [];
-    const strVal = String(cellValue == null ? '' : cellValue).trim();
-    if (!strVal) return paths;
-    if (strVal.includes('|')) {
-      strVal.split('|').forEach(p => {
-        const cleaned = p.trim();
-        if (cleaned.startsWith('M') || cleaned.startsWith('m')) paths.push(cleaned);
-      });
-    } else if (strVal.startsWith('M') || strVal.startsWith('m')) {
-      paths.push(strVal);
-    }
-    return paths;
-  }
-
-  function decodeKanjiVGFileBytes(buffer) {
-    const u8 = new Uint8Array(buffer);
-    if (u8.length >= 3 && u8[0] === 0xef && u8[1] === 0xbb && u8[2] === 0xbf) {
-      return new TextDecoder('utf-8').decode(buffer.slice(3));
-    }
-    if (u8.length >= 2 && u8[0] === 0xff && u8[1] === 0xfe) {
-      return new TextDecoder('utf-16le').decode(buffer.slice(2));
-    }
-    if (u8.length >= 2 && u8[0] === 0xfe && u8[1] === 0xff) {
-      return new TextDecoder('utf-16be').decode(buffer.slice(2));
-    }
-    const utf8 = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
-    const reputf8 = (utf8.match(/\uFFFD/g) || []).length;
-    const badRatio = reputf8 / Math.max(1, utf8.length);
-    if (badRatio < 0.002) return utf8;
-    try {
-      const sj = new TextDecoder('shift-jis', { fatal: false }).decode(buffer);
-      if ((sj.match(/\uFFFD/g) || []).length < reputf8) return sj;
-    } catch (e) {}
-    return utf8;
-  }
-
-  function parseKanjiVGTsvText(text) {
-    const kanjiMap = {};
-    const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r?\n/);
-    for (let li = 0; li < lines.length; li++) {
-      let line = lines[li];
-      if (!line) continue;
-      if (/^\s*#/.test(line)) continue;
-      const parts = line.split('\t');
-      if (parts.length < 3) continue;
-      const kanji = parts[0].trim();
-      const pathCell = parts.slice(2).join('\t').trim();
-      if (!kanji) continue;
-      const paths = pathsFromKanjiVGPathsCell(pathCell);
-      if (paths.length === 0) continue;
-      kanjiMap[kanji] = paths;
-    }
-    return kanjiMap;
-  }
-
-  function kanjiMapToStaticPack(kanjiMap) {
-    return { bookName: KANJI_VG_BOOK_ID, sheetData: { [KANJI_VG_SHEET_NAME]: kanjiMap } };
-  }
-
-  async function fetchKanjiVGTsvPack() {
-    const url = new URL(KANJI_VG_TXT_FILE, window.location.href);
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(res.statusText || String(res.status));
-    const buf = await res.arrayBuffer();
-    const text = decodeKanjiVGFileBytes(buf);
-    const map = parseKanjiVGTsvText(text);
-    if (Object.keys(map).length === 0) throw new Error('KanjiVG.txt に有効な行がありません');
-    return kanjiMapToStaticPack(map);
-  }
 
   // ==========================================
   // 3. ストレージとプロファイル管理
@@ -765,48 +460,23 @@
     if (overlay) { overlay.style.display = show ? 'flex' : 'none'; if(show) overlay.querySelector('span').textContent = msg; }
   }
 
-  async function bootstrapApp() {
+  window.onload = () => {
     updateProfileSelectUI();
-    showLoading(true, '初期化中...');
-    if (IS_GAS_RUNTIME) {
-      google.script.run
-        .withSuccessHandler(initData => {
-          showLoading(false);
-          try {
-            const cachedBook = SafeStorage.get('kanjiBookName');
-            if (cachedBook !== initData.bookName) { SafeStorage.clearData(); SafeStorage.set('kanjiBookName', initData.bookName); }
-            const sheetSelect = document.getElementById('sheet-selector');
-            sheetSelect.innerHTML = initData.sheets.map(s => `<option value="${s}">${s}</option>`).join('');
-            loadKanjiData();
-          } catch(e) { alert('初期化エラー: ' + e.message); }
-        })
-        .withFailureHandler(e => { alert('サーバー接続エラー: ' + e.message); showLoading(false); })
-        .getAppInitData();
-      return;
-    }
-    try {
-      STATIC_KANJI_PACK = await fetchKanjiVGTsvPack();
-      if (!STATIC_KANJI_PACK.sheetData || Object.keys(STATIC_KANJI_PACK.sheetData).length === 0) {
-        throw new Error('KanjiVG.txt のシートが空です');
-      }
-    } catch (e) {
-      console.warn('KanjiVG.txt を読めませんでした。内蔵デモで起動します。', e);
-      STATIC_KANJI_PACK = embeddedStaticKanjiPack();
-    }
-    const cachedBook = SafeStorage.get('kanjiBookName');
-    if (cachedBook !== STATIC_KANJI_PACK.bookName) { SafeStorage.clearData(); SafeStorage.set('kanjiBookName', STATIC_KANJI_PACK.bookName); }
-    const sheetSelect = document.getElementById('sheet-selector');
-    sheetSelect.innerHTML = Object.keys(STATIC_KANJI_PACK.sheetData).map(s => `<option value="${s}">${s}</option>`).join('');
-    loadKanjiData();
-    showLoading(false);
-  }
-
-  window.addEventListener('load', () => {
-    bootstrapApp().catch(e => {
-      alert('初期化エラー: ' + (e.message || String(e)));
-      showLoading(false);
-    });
-  });
+    showLoading(true, "初期化中...");
+    google.script.run
+      .withSuccessHandler(initData => {
+        showLoading(false); // エラーが起きる前に絶対に隠す
+        try {
+          const cachedBook = SafeStorage.get('kanjiBookName');
+          if (cachedBook !== initData.bookName) { SafeStorage.clearData(); SafeStorage.set('kanjiBookName', initData.bookName); }
+          const sheetSelect = document.getElementById('sheet-selector');
+          sheetSelect.innerHTML = initData.sheets.map(s => `<option value="${s}">${s}</option>`).join('');
+          loadKanjiData();
+        } catch(e) { alert("初期化エラー: " + e.message); }
+      })
+      .withFailureHandler(e => { alert("サーバー接続エラー: " + e.message); showLoading(false); })
+      .getAppInitData();
+  };
 
   function syncData() { const name = document.getElementById('sheet-selector').value; if (name) SafeStorage.remove(`kanjiData_${name}`); loadKanjiData(); }
 
@@ -815,32 +485,20 @@
     if (!name) { showLoading(false); return; }
     const cached = SafeStorage.get(`kanjiData_${name}`);
     
-    if (cached) {
-      try {
-        KANJI_DATA = JSON.parse(cached); populateKanjiSelector(); showLoading(false); return;
-      } catch(e) { SafeStorage.remove(`kanjiData_${name}`); }
-    }
-
-    if (STATIC_KANJI_PACK && STATIC_KANJI_PACK.sheetData) {
-      showLoading(true, `${name} を読込中...`);
-      const data = STATIC_KANJI_PACK.sheetData[name] || {};
-      showLoading(false);
-      try {
-        KANJI_DATA = data;
-        SafeStorage.set(`kanjiData_${name}`, JSON.stringify(data));
-        populateKanjiSelector();
-      } catch(e) { alert('データ展開中にエラー: ' + e.message); }
-      return;
+    if (cached) { 
+      try { 
+        KANJI_DATA = JSON.parse(cached); populateKanjiSelector(); showLoading(false); return; 
+      } catch(e) { SafeStorage.remove(`kanjiData_${name}`); } 
     }
 
     showLoading(true, `${name} を読込中...`);
     google.script.run
-      .withSuccessHandler(data => {
-        showLoading(false);
-        try { KANJI_DATA = data; SafeStorage.set(`kanjiData_${name}`, JSON.stringify(data)); populateKanjiSelector(); }
-        catch(e) { alert('データ展開中にエラー: ' + e.message); }
+      .withSuccessHandler(data => { 
+        showLoading(false); 
+        try { KANJI_DATA = data; SafeStorage.set(`kanjiData_${name}`, JSON.stringify(data)); populateKanjiSelector(); } 
+        catch(e) { alert("データ展開中にエラー: " + e.message); } 
       })
-      .withFailureHandler(e => { alert('データ取得失敗: ' + e.message); showLoading(false); })
+      .withFailureHandler(e => { alert("データ取得失敗: " + e.message); showLoading(false); })
       .getKanjiDataFromSheet(name);
   }
 
@@ -1248,390 +906,6 @@
       else mEl.innerText = `もう一歩。${sizeLabel}。ゆっくりなぞると形が安定しやすいです。\n` + subLine;
     }
   }
-
-  // ==========================================
-  // 10. 縦書きドリル（教材シート列: 訓読みA_読み / 訓A_例文1 …）
-  // ==========================================
-  let APP_MODE = 'practice';
-  let ALL_DRILL_DATA = {};
-  let CURRENT_DRILL_BOOK_ID = '';
-  let CURRENT_DRILL_QUESTIONS = [];
-  let ACTIVE_QUESTION_INDEX = -1;
-
-  const LOCAL_SAMPLE_DRILL = {
-    '第1課サンプル': [
-      { セット: 1, 漢字: '一', 訓読みA_読み: 'ひと', 訓A_例文1: '一つある。', 訓A_例文2: 'もう一つだ。', 訓読みB_読み: 'いっ', 訓B_例文1: 'けしゴムを一こかした。', 音読みA_読み: 'いち', 音A_例文1: '一ばんだよ。', 音A_例文2: '一月はふゆだ。', 音読みB_読み: 'いつ', 音B_例文1: 'きん一にまぜる。', 音B_例文2: 'とう一する。' },
-      { セット: 1, 漢字: '右', 訓読みA_読み: 'みぎ', 訓A_例文1: '右をむく。', 訓A_例文2: '右手を見る。', 音読みA_読み: 'う', 音A_例文1: 'うせつする。', 音A_例文2: 'さゆうを見る。' },
-      { セット: 1, 漢字: '雨', 訓読みA_読み: 'あめ', 訓A_例文1: '雨がふる。', 訓A_例文2: '大雨がふる。', 訓読みB_読み: 'あま', 訓B_例文1: '雨水がでる。', 訓B_例文2: '雨ぐもをみる。', 音読みA_読み: 'う', 音A_例文1: '雨てんちゅうしだ。', 音A_例文2: 'ごう雨になる。' }
-    ]
-  };
-
-  function drillEscapeHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function isDrillSkipped(v) {
-    const t = String(v == null ? '' : v).trim();
-    return t === '' || t === '×' || t.toLowerCase() === 'x' || t === '✕';
-  }
-
-  function splitSentenceAroundKanji(sentence, kanji) {
-    const sen = String(sentence == null ? '' : sentence);
-    const k = String(kanji || '');
-    const idx = k ? sen.indexOf(k) : -1;
-    if (idx < 0) {
-      return {
-        prefix: sen,
-        suffix: '',
-      };
-    }
-    return {
-      prefix: sen.slice(0, idx),
-      suffix: sen.slice(idx + k.length),
-    };
-  }
-
-  function pickOne(arr) {
-    if (!arr || arr.length === 0) return '';
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
-
-  function applyLocalDrillSample() {
-    ALL_DRILL_DATA = JSON.parse(JSON.stringify(LOCAL_SAMPLE_DRILL));
-    CURRENT_DRILL_BOOK_ID = 'local-sample';
-    const sel = document.getElementById('drill-book-select');
-    if (sel) {
-      sel.innerHTML = '<option value="local-sample">サンプル教材（静的／オフライン）</option>';
-    }
-    SafeStorage.set('kanjiDrillBookId', CURRENT_DRILL_BOOK_ID);
-    SafeStorage.set('kanjiDrillData', JSON.stringify(ALL_DRILL_DATA));
-    updateDrillSheetSelect();
-  }
-
-  function refreshDrillBooks() {
-    if (!IS_GAS_RUNTIME) {
-      applyLocalDrillSample();
-      return;
-    }
-    showLoading(true, '教材フォルダ／ブック一覧を取得中…');
-    google.script.run
-      .withSuccessHandler(res => {
-        showLoading(false);
-        if (res.error) {
-          alert(res.error);
-          return;
-        }
-        const books = res.books || [];
-        const sel = document.getElementById('drill-book-select');
-        sel.innerHTML = books.length
-          ? books.map(b => `<option value="${b.id}">${drillEscapeHtml(b.name)}</option>`).join('')
-          : '<option value="">ブックがありません</option>';
-        if (books.length > 0) {
-          CURRENT_DRILL_BOOK_ID = books[0].id;
-          sel.value = CURRENT_DRILL_BOOK_ID;
-          loadSelectedDrillBook();
-        }
-      })
-      .withFailureHandler(e => {
-        showLoading(false);
-        alert('エラー: ' + e.message);
-      })
-      .getDrillBooksList();
-  }
-
-  function loadSelectedDrillBook() {
-    const sel = document.getElementById('drill-book-select');
-    const id = sel ? sel.value : '';
-    if (!id) return;
-    if (!IS_GAS_RUNTIME || id === 'local-sample') {
-      applyLocalDrillSample();
-      return;
-    }
-    showLoading(true, '選択中のブックを読み込み中…');
-    google.script.run
-      .withSuccessHandler(res => {
-        showLoading(false);
-        if (res.error) {
-          alert(res.error);
-          return;
-        }
-        ALL_DRILL_DATA = res.data || {};
-        CURRENT_DRILL_BOOK_ID = id;
-        SafeStorage.set('kanjiDrillBookId', id);
-        SafeStorage.set('kanjiDrillData', JSON.stringify(ALL_DRILL_DATA));
-        updateDrillSheetSelect();
-      })
-      .withFailureHandler(e => {
-        showLoading(false);
-        alert('エラー: ' + e.message);
-      })
-      .getDrillData(id);
-  }
-
-  function reloadCurrentDrillBook() {
-    loadSelectedDrillBook();
-  }
-
-  function switchAppTab(tab) {
-    APP_MODE = tab;
-    document.getElementById('tab-practice').classList.remove('active');
-    document.getElementById('tab-drill').classList.remove('active');
-    document.getElementById(`tab-${tab}`).classList.add('active');
-
-    document.getElementById('section-practice').classList.remove('active');
-    document.getElementById('section-drill').classList.remove('active');
-    document.getElementById(`section-${tab}`).classList.add('active');
-
-    const canvasEl = document.getElementById('canvas');
-    const appCanvasSlot = document.getElementById('app-canvas-slot');
-    const drillWritingLayout = document.getElementById('drill-writing-layout');
-    const strictModeControls = document.getElementById('cb-strict-mode')?.closest('.controls') || document.querySelectorAll('.controls')[0];
-    const strictModeCheckbox = document.getElementById('cb-strict-mode');
-    const scoreControls = document.getElementById('score-controls');
-    const traceControls = document.getElementById('trace-controls');
-    const demoControls = document.getElementById('demo-controls');
-    const resultBox = document.getElementById('result-box');
-    const modeMsg = document.getElementById('mode-msg');
-
-    if (tab === 'drill') {
-      const dest = document.getElementById('drill-canvas-container');
-      dest.appendChild(modeMsg);
-      if (drillWritingLayout && appCanvasSlot && appCanvasSlot.parentElement !== drillWritingLayout) {
-        drillWritingLayout.insertBefore(appCanvasSlot, document.querySelector('#drill-writing-layout .drill-side-buttons'));
-      }
-      if (strictModeControls) strictModeControls.classList.add('hidden');
-      if (strictModeCheckbox) strictModeCheckbox.checked = false;
-      if (scoreControls) scoreControls.classList.add('hidden');
-      if (traceControls) traceControls.classList.add('hidden');
-      if (demoControls) demoControls.classList.add('hidden');
-      dest.appendChild(resultBox);
-
-      if (!IS_GAS_RUNTIME) {
-        if (Object.keys(ALL_DRILL_DATA).length === 0) applyLocalDrillSample();
-      } else {
-        const bookSel = document.getElementById('drill-book-select');
-        const cachedData = SafeStorage.get('kanjiDrillData');
-        const cachedBid = SafeStorage.get('kanjiDrillBookId');
-        if (Object.keys(ALL_DRILL_DATA).length === 0 && cachedData) {
-          try {
-            ALL_DRILL_DATA = JSON.parse(cachedData);
-            CURRENT_DRILL_BOOK_ID = cachedBid || '';
-          } catch (e) {}
-        }
-        if (bookSel.options.length === 0) refreshDrillBooks();
-        else if (Object.keys(ALL_DRILL_DATA).length > 0) updateDrillSheetSelect();
-      }
-    } else {
-      const dest = document.getElementById('section-practice');
-      const ref = document.getElementById('kanji-selector-area');
-      dest.insertBefore(modeMsg, ref.nextSibling);
-      if (appCanvasSlot) dest.insertBefore(appCanvasSlot, modeMsg.nextSibling);
-
-      let lastEl = appCanvasSlot || canvasEl;
-      if (strictModeControls) {
-        strictModeControls.classList.remove('hidden');
-        dest.insertBefore(strictModeControls, lastEl.nextSibling);
-        lastEl = strictModeControls;
-      }
-      if (scoreControls) {
-        scoreControls.classList.remove('hidden');
-        dest.insertBefore(scoreControls, lastEl.nextSibling);
-        lastEl = scoreControls;
-      }
-      if (traceControls) {
-        traceControls.classList.remove('hidden');
-        dest.insertBefore(traceControls, lastEl.nextSibling);
-        lastEl = traceControls;
-      }
-      if (demoControls) {
-        demoControls.classList.remove('hidden');
-        dest.insertBefore(demoControls, lastEl.nextSibling);
-        lastEl = demoControls;
-      }
-      dest.insertBefore(resultBox, lastEl.nextSibling);
-    }
-  }
-
-  function updateDrillSheetSelect() {
-    const select = document.getElementById('drill-sheet-select');
-    const sheets = Object.keys(ALL_DRILL_DATA);
-    select.innerHTML = sheets.length
-      ? sheets.map(s => `<option value="${drillEscapeHtml(s)}">${drillEscapeHtml(s)}</option>`).join('')
-      : '<option value="">データなし</option>';
-    renderDrillSets();
-  }
-
-  function renderDrillSets() {
-    const sheetName = document.getElementById('drill-sheet-select').value;
-    if (!sheetName) return;
-    const data = ALL_DRILL_DATA[sheetName] || [];
-    const sets = new Set();
-    data.forEach(row => {
-      const s = row['セット'];
-      if (s != null && !isDrillSkipped(s)) sets.add(s);
-    });
-    const setSelect = document.getElementById('drill-set-select');
-    setSelect.innerHTML = Array.from(sets).map(s => `<option value="${drillEscapeHtml(String(s))}">セット ${drillEscapeHtml(String(s))}</option>`).join('');
-  }
-
-  function pushDrillQuestionsForRow(row) {
-    const raw = row['漢字'];
-    const targetKanji = raw == null ? '' : String(raw).trim();
-    if (!targetKanji || isDrillSkipped(targetKanji)) return;
-
-    const labels = ['A', 'B', 'C', 'D'];
-    const candidates = [];
-    labels.forEach(L => {
-      const yKun = row['訓読み' + L + '_読み'];
-      if (!isDrillSkipped(yKun)) {
-        const localSentences = [];
-        [1, 2].forEach(num => {
-          const sen = row['訓' + L + '_例文' + num];
-          if (!isDrillSkipped(sen)) {
-            localSentences.push(String(sen).trim());
-          }
-        });
-        if (localSentences.length > 0) {
-          candidates.push({
-            yomi: String(yKun).trim(),
-            sentences: localSentences,
-          });
-        }
-      }
-      const yOn = row['音読み' + L + '_読み'];
-      if (!isDrillSkipped(yOn)) {
-        const localSentences = [];
-        [1, 2].forEach(num => {
-          const sen = row['音' + L + '_例文' + num];
-          if (!isDrillSkipped(sen)) {
-            localSentences.push(String(sen).trim());
-          }
-        });
-        if (localSentences.length > 0) {
-          candidates.push({
-            yomi: String(yOn).trim(),
-            sentences: localSentences,
-          });
-        }
-      }
-    });
-    if (candidates.length === 0) return;
-    const picked = candidates[Math.floor(Math.random() * candidates.length)];
-    CURRENT_DRILL_QUESTIONS.push({
-      kanji: targetKanji,
-      yomi: picked.yomi,
-      sentence: pickOne(picked.sentences),
-    });
-  }
-
-  function startDrill() {
-    const sheetName = document.getElementById('drill-sheet-select').value;
-    const setName = document.getElementById('drill-set-select').value;
-    if (!sheetName || setName === '') {
-      alert('シートとセットを選んでください。');
-      return;
-    }
-
-    const data = ALL_DRILL_DATA[sheetName] || [];
-    const rows = data.filter(r => String(r['セット']) === String(setName));
-
-    CURRENT_DRILL_QUESTIONS = [];
-    rows.forEach(pushDrillQuestionsForRow);
-
-    if (CURRENT_DRILL_QUESTIONS.length === 0) {
-      alert('このセットには有効な問題がありません（×の行・例文を確認）。');
-      return;
-    }
-
-    renderDrillPaper();
-  }
-
-  function renderDrillPaper() {
-    const container = document.getElementById('drill-questions');
-    container.innerHTML = '';
-
-    CURRENT_DRILL_QUESTIONS.forEach((q, i) => {
-      const split = splitSentenceAroundKanji(q.sentence, q.kanji);
-      const col = document.createElement('div');
-      col.className = 'drill-question-col';
-      col.innerHTML = `
-        <div class="drill-q-num">${i + 1}</div>
-        <div class="drill-prompt-line">
-          <span class="drill-prefix">${drillEscapeHtml(split.prefix)}</span>
-          <span class="kanji-blank drill-blank" data-q="${i}" id="blank-${i}" onclick="selectDrillQuestion(${i})"></span>
-          <span class="drill-suffix">${drillEscapeHtml(split.suffix)}</span>
-        </div>
-      `;
-      container.appendChild(col);
-    });
-
-    document.getElementById('drill-container').classList.remove('hidden');
-
-    if (CURRENT_DRILL_QUESTIONS.length > 0) selectDrillQuestion(0);
-  }
-
-  function selectDrillQuestion(idx) {
-    ACTIVE_QUESTION_INDEX = idx;
-    document.querySelectorAll('.drill-blank').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.drill-blank[data-q="' + idx + '"]').forEach(el => el.classList.add('active'));
-
-    const q = CURRENT_DRILL_QUESTIONS[idx];
-    const rubyBox = document.getElementById('drill-ruby-box');
-    if (rubyBox) rubyBox.textContent = q.yomi || 'よみ';
-    setTargetKanjiForDrill(q.kanji);
-
-    const activeBlank = document.querySelector('.drill-blank[data-q="' + idx + '"]');
-    if (activeBlank) activeBlank.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-  }
-
-  function setTargetKanjiForDrill(kanji) {
-    if (KANJI_DATA[kanji]) {
-      referenceStrokes = KANJI_DATA[kanji].map(p => {
-        const points = sampleSvgPath(p, NUM_SAMPLES);
-        return { type: detectStrokeType(points, false), points: points };
-      });
-    } else {
-      referenceStrokes = [];
-      console.warn('KanjiVG に漢字がありません: ' + kanji);
-    }
-    switchMode('score');
-    clearCanvas();
-  }
-
-  const originalEvaluateKanji = evaluateKanji;
-  evaluateKanji = function(isTrace) {
-    originalEvaluateKanji(isTrace);
-
-    const sEl = document.getElementById('score');
-    const scoreText = sEl.innerText;
-    const scoreMatch = scoreText.match(/(\d+)/);
-    if (scoreMatch && APP_MODE === 'drill' && ACTIVE_QUESTION_INDEX >= 0) {
-      const score = parseInt(scoreMatch[1], 10);
-      if (score >= 70) {
-        const q = CURRENT_DRILL_QUESTIONS[ACTIVE_QUESTION_INDEX];
-        document.querySelectorAll('.drill-blank[data-q="' + ACTIVE_QUESTION_INDEX + '"]').forEach(b => {
-          b.classList.add('answered');
-          b.innerText = q.kanji;
-        });
-
-        setTimeout(() => {
-          let next = ACTIVE_QUESTION_INDEX + 1;
-          while (next < CURRENT_DRILL_QUESTIONS.length) {
-            const el = document.querySelector('.drill-blank[data-q="' + next + '"]');
-            if (el && !el.classList.contains('answered')) {
-              selectDrillQuestion(next);
-              return;
-            }
-            next++;
-          }
-        }, 1200);
-      }
-    }
-  };
 </script>
 </body>
 </html>
