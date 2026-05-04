@@ -241,6 +241,34 @@ function doGet() {
 }
 
 /**
+ * サンプル教材の管理フォルダ/ブックを作成して、スクリプトプロパティへ保存する。
+ * Apps Script エディタから手動実行して初期設定に使う。
+ */
+function initializeSampleDataProperties() {
+  ensureKanjiPracticeBootstrap_();
+  var props = PropertiesService.getScriptProperties();
+  var folderId =
+    props.getProperty('KANJI_DRILL_FOLDER_ID') ||
+    props.getProperty('KANJI_DRILL_MATERIAL_FOLDER_ID') ||
+    '';
+  var drillIdsCsv =
+    props.getProperty('KANJI_DRILL_BOOK_IDS') ||
+    props.getProperty('DRILL_BOOK_IDS') ||
+    '';
+  var kanjiSheetId = props.getProperty('KANJI_SHEET_ID') || '';
+
+  return {
+    success: true,
+    message: 'サンプル教材のスクリプトプロパティを設定しました。',
+    properties: {
+      KANJI_DRILL_FOLDER_ID: folderId,
+      KANJI_DRILL_BOOK_IDS: drillIdsCsv,
+      KANJI_SHEET_ID: kanjiSheetId,
+    },
+  };
+}
+
+/**
  * ドリル用ブック一覧（スプレッドシート）
  */
 function getDrillBooksList() {
